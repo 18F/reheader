@@ -1,0 +1,21 @@
+language: python
+
+sudo: false
+
+python:
+  - "3.4"
+  - "3.5"
+
+cache: pip
+
+install:
+  - travis_retry pip install codecov
+  - travis_retry pip install .
+  - travis_retry pip install -r requirements-dev.txt
+
+script:
+  - py.test 
+
+after_success:
+  - codecov
+
