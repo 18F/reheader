@@ -28,10 +28,11 @@ def best_match(actual, expected, minimum_score):
 
 
 def _row_requirements(headers, optional_prefix):
-    result = {h.strip(): True
+    result = {h.strip(): {'required': True,
+        'regex': None}
               for h in headers if not h.strip().startswith(optional_prefix)}
     prefix_len = len(optional_prefix)
-    result.update({h.strip()[prefix_len:]: False
+    result.update({h.strip()[prefix_len:]: {'required': False}
                    for h in headers if h.strip().startswith(optional_prefix)})
     return result
 
@@ -42,10 +43,18 @@ def reheadered(data,
                minimum_score=MINIMUM_SCORE,
                optional_prefix=OPTIONAL_PREFIX):
     headers = [_normalize_whitespace(h) for h in headers]
+    headers_in_data = None
     for (row_num, row) in enumerate(data):
+        if not hasattr(row, 'keys'):
+            if headers_in_data is None:
+                # this was the header line
+                headers_in_data = row
+                continue
+            else:
+                row = {r[0]: r[1] for r in zip(headers_in_data, row)}
         result = {}
         row_requirements = _row_requirements(headers, optional_prefix)
-        for col in row:
+        for col in row:  # now col is either the header value
             match = best_match(col, row_requirements, minimum_score)
             if match is not None:
                 row_requirements.pop(match)
@@ -53,7 +62,7 @@ def reheadered(data,
             else:
                 if keep_extra:
                     result[col] = row[col]
-        unmet = [h for h in row_requirements if row_requirements[h]]
+        unmet = [h for h in row_requirements if row_requirements[h]['required']]
         if unmet:
             err_msg = '{} not found in row #{}: {}'.format(unmet, row_num, row)
             raise KeyError(err_msg)

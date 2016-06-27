@@ -28,8 +28,9 @@ _raw_txt_2 = """zipcode, Name, e-mail, profession
 
 
 def _data(src=_raw_txt_1, reader=csv.DictReader, with_headers=True):
-    for row in reader(StringIO(src)):
-        yield row
+    for (row_num, row) in enumerate(reader(StringIO(src))):
+        if with_headers or (row_num > 0):
+            yield row
 
 
 class TestReheaderedExistence(object):
@@ -55,6 +56,22 @@ class TestReheaderedFuzzyMatch(object):
             assert 'email' in row
             assert 'zip' in row
 
+    def test_perfect_column_name_match_list_of_lists(self):
+        data = _data(reader=csv.reader, with_headers=True)
+        for row in reheadered(_data(), ['name', 'email', 'zip']):
+            assert 'name' in row
+            assert 'email' in row
+            assert 'zip' in row
+
+    def test_list_of_lists_whitespace_before_headers(self):
+        src = "\n\n\n\n" + _raw_txt_1
+        data = _data(src=src, reader=csv.reader, with_headers=True)
+        for row in reheadered(_data(), ['name', 'email', 'zip']):
+            import pytest; pytest.set_trace()
+            assert 'name' in row
+            assert 'email' in row
+            assert 'zip' in row
+
     def test_whitespace_safe_in_expected(self):
         for row in reheadered(_data(), ['       name', 'email', ' zip']):
             assert 'name' in row
@@ -70,6 +87,20 @@ class TestReheaderedFuzzyMatch(object):
             assert 'e-mail' in row
 
     def test_fuzzy_column_name_match(self):
+        headers = ['Name', 'mail', 'zipcode']
+        for row in reheadered(_data(), headers):
+            assert 'Name' in row
+            assert 'name' not in row
+
+            assert 'mail' in row
+            assert row['mail']
+            assert 'email' not in row
+
+            assert 'zipcode' in row
+            assert 'zip' not in row
+
+    def test_fuzzy_column_name_match_list_of_lists(self):
+        data = _data(reader=csv.reader, with_headers=True)
         headers = ['Name', 'mail', 'zipcode']
         for row in reheadered(_data(), headers):
             assert 'Name' in row
@@ -104,6 +135,25 @@ class TestReheaderedFuzzyMatch(object):
         for row in reheadered(_data(), headers, optional_prefix='OPTIONAL~'):
             assert 'mail' in row
             assert 'nationality' not in row
+
+
+class TestReheaderedRegexMatch(object):
+
+    def setup_method(self, method):
+        self.data = _data(reader=csv.reader)
+
+    def test_dict_of_headers_accepted(self):
+        headers = {'name': r'(\w+\s+)+', 'email': '\w@\w\.\w'}
+        data = _data()
+        reheadered(data, headers).__next__()
+
+    def test_list_of_lists_accepted(self):
+        headers = {'name': r'(\w+\s+)+', 'email': '\w@\w\.\w'}
+        data = _data(reader=csv.reader, with_headers=True)
+        reheadered(data, headers).__next__()
+
+    # blank lines before headers
+
 
 
 class TestOptionalArgs(object):

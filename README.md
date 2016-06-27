@@ -51,12 +51,13 @@ actual header values to identify columns.
     Nellie Newsock,nellie@sox.com,Adventuress,45309
     $ python
     >>> import csv
-    >>> from reheader import reheadered
+    >>> from reheader.reheader import reheadered
     >>> infile = open('data.csv')
     >>> data_source = csv.DictReader(infile)
-    , ['email', 'zip_code', 'name'])
-    >>> for row in reheadered(data_source, ['email', 'zip_code', 'name']):
+    >>> for row in reheadered(data_source, ['email', 'zipcode', 'name']):
     ...     print(row)
+    {'email': 'nellie@sox.com', 'name': 'Nellie Newsock', 'zipcode': '45309'}
+
 
 ### Identifying columns by regex
 
