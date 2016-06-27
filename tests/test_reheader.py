@@ -64,11 +64,16 @@ class TestReheaderedFuzzyMatch(object):
             assert 'email' in row
             assert 'zip' in row
 
+    def test_list_of_lists_no_data(self):
+        infile = StringIO(_raw_txt_1.splitlines()[0])
+        data = csv.reader(infile)
+        with pytest.raises(StopIteration):
+            reheadered(data, ['name', 'email', 'zip']).__next__()
+
     def test_list_of_lists_whitespace_before_headers(self):
         src = "\n\n\n\n" + _raw_txt_1
         data = _data(src=src, reader=csv.reader, with_headers=True)
-        for row in reheadered(_data(), ['name', 'email', 'zip']):
-            import pytest
+        for row in reheadered(data, ['name', 'email', 'zip']):
             assert 'name' in row
             assert 'email' in row
             assert 'zip' in row
@@ -153,25 +158,31 @@ class TestReheaderedRegexMatch(object):
         reheadered(data, headers).__next__()
 
     def test_regexes_preferred_to_fuzzy_match(self):
-        headers = {'zip': '\w+@\w+\.\w+', 'email': '\d+'}
+        headers = {'columnA': '\w+@\w+\.\w+', 'columnB': '\d+'}
         for row in reheadered(_data(), headers):
+            assert 'columnA' in row
+            assert '@' in row['columnA']
+            assert 'columnB' in row
+            if row['columnB']:
+                assert re.search('\d+', row['columnB'])
+
+    def test_mix_regexes_with_column_name_matches(self):
+        headers = {'columnA': '\w+@\w+\.\w+', 'zip': None}
+        for row in reheadered(_data(), headers):
+            assert 'columnA' in row
+            assert '@' in row['columnA']
             assert 'zip' in row
-            assert '@' in row['zip']
-            assert 'email' in row
-            if row['email']:
-                assert re.search('\d+', row['email'])
+            if row['zip']:
+                assert re.search('\d+', row['zip'])
 
     def test_optional_in_regex(self):
-        headers = {'zip': '\w+@\w+\.\w+', 'email': '?:\d+'}
+        headers = {'zip': '\w+@\w+\.\w+', '?:email': '\d+'}
         for row in reheadered(_data(), headers):
             assert 'zip' in row
             assert '@' in row['zip']
             assert 'email' in row
             if row['email']:
                 assert re.search('\d+', row['email'])
-
-    # blank lines before headers
-    # persist the row
 
 
 class TestOptionalArgs(object):
@@ -205,3 +216,12 @@ class TestOptionalArgs(object):
         headers = ['Name', 'mail', 'zip']
         with pytest.raises(KeyError):
             reheadered(_data(), headers, minimum_score=90).__next__()
+
+    def test_prefer_fuzzy(self):
+        headers = {'columnA': '\w+@\w+\.\w+', 'name': '\d+'}
+        for row in reheadered(_data(), headers, prefer_fuzzy=True):
+            assert 'columnA' in row
+            assert '@' in row['columnA']
+            assert 'name' in row
+            if row['name']:
+                assert not re.search('\d+', row['name'])
