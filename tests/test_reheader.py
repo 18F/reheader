@@ -7,10 +7,11 @@ test_reheader
 Tests for `reheader` module.
 """
 
-import pytest
 import csv
+import re
 from io import StringIO
 
+import pytest
 from reheader import reheadered
 
 _raw_txt_1 = """name,email,zip,
@@ -67,7 +68,7 @@ class TestReheaderedFuzzyMatch(object):
         src = "\n\n\n\n" + _raw_txt_1
         data = _data(src=src, reader=csv.reader, with_headers=True)
         for row in reheadered(_data(), ['name', 'email', 'zip']):
-            import pytest; pytest.set_trace()
+            import pytest
             assert 'name' in row
             assert 'email' in row
             assert 'zip' in row
@@ -138,22 +139,39 @@ class TestReheaderedFuzzyMatch(object):
 
 
 class TestReheaderedRegexMatch(object):
-
     def setup_method(self, method):
         self.data = _data(reader=csv.reader)
 
     def test_dict_of_headers_accepted(self):
-        headers = {'name': r'(\w+\s+)+', 'email': '\w@\w\.\w'}
+        headers = {'name': r'(\w+\s+)+', 'email': '\w+@\w+\.\w+'}
         data = _data()
         reheadered(data, headers).__next__()
 
     def test_list_of_lists_accepted(self):
-        headers = {'name': r'(\w+\s+)+', 'email': '\w@\w\.\w'}
+        headers = {'name': r'(\w+\s+)+', 'email': '\w+@\w+\.\w+'}
         data = _data(reader=csv.reader, with_headers=True)
         reheadered(data, headers).__next__()
 
-    # blank lines before headers
+    def test_regexes_preferred_to_fuzzy_match(self):
+        headers = {'zip': '\w+@\w+\.\w+', 'email': '\d+'}
+        for row in reheadered(_data(), headers):
+            assert 'zip' in row
+            assert '@' in row['zip']
+            assert 'email' in row
+            if row['email']:
+                assert re.search('\d+', row['email'])
 
+    def test_optional_in_regex(self):
+        headers = {'zip': '\w+@\w+\.\w+', 'email': '?:\d+'}
+        for row in reheadered(_data(), headers):
+            assert 'zip' in row
+            assert '@' in row['zip']
+            assert 'email' in row
+            if row['email']:
+                assert re.search('\d+', row['email'])
+
+    # blank lines before headers
+    # persist the row
 
 
 class TestOptionalArgs(object):
