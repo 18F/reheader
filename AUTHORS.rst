@@ -5,7 +5,7 @@ Credits
 Development Lead
 ----------------
 
-* Catherine Devlin <catherine.devlin@gsa.gov>
+* 18F <catherine.devlin@gsa.gov>
 
 Contributors
 ------------

@@ -3,7 +3,7 @@
 
 from setuptools import setup
 
-with open('README.rst') as readme_file:
+with open('README.md') as readme_file:
     readme = readme_file.read()
 
 with open('HISTORY.rst') as history_file:
@@ -14,31 +14,31 @@ requirements = [
 ]
 
 test_requirements = [
-    'pytest==2.9.2',
+    # TODO: put package test requirements here
 ]
 
 setup(
-    name='fuzzycsv',
+    name='reheader',
     version='0.1.0',
-    description="CSV reader that adapts to varying/absent column headers",
+    description="Fits data's headers to conform to a template",
     long_description=readme + '\n\n' + history,
-    author="Catherine Devlin",
+    author="18F",
     author_email='catherine.devlin@gsa.gov',
-    url='https://github.com/catherinedevlin/fuzzycsv',
+    url='https://github.com/18F/reheader',
     packages=[
-        'fuzzycsv',
+        'reheader',
     ],
-    package_dir={'fuzzycsv':
-                 'fuzzycsv'},
+    package_dir={'reheader':
+                 'reheader'},
     include_package_data=True,
     install_requires=requirements,
-    license="CC0 1.0 Universal (CC0 1.0) Public Domain Dedication",
-    zip_safe=True,
-    keywords='fuzzycsv',
+    license="CC0 license",
+    zip_safe=False,
+    keywords='reheader',
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: Developers',
-        'License :: CC0 1.0 Universal (CC0 1.0) Public Domain Dedication'
+        'License :: CC0 1.0 Universal (CC0 1.0) Public Domain Dedication',
         'Natural Language :: English',
         "Programming Language :: Python :: 2",
         'Programming Language :: Python :: 2.6',

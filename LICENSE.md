@@ -1,3 +1,9 @@
+This project uses several third-party tools, each of which has its own license.
+
+Everything else is covered by the following text.
+
+## Public domain
+
 As a work of the United States Government, this project is in the
 public domain within the United States.
 
@@ -6,8 +12,7 @@ worldwide through the CC0 1.0 Universal public domain dedication.
 
 ## CC0 1.0 Universal Summary
 
-This is a human-readable summary of the
-[Legal Code (read the full text)](https://creativecommons.org/publicdomain/zero/1.0/legalcode).
+This is a human-readable summary of the [Legal Code (read the full text)](https://creativecommons.org/publicdomain/zero/1.0/legalcode).
 
 ### No Copyright
 
