@@ -74,8 +74,7 @@ compiled regexes (to include regex compilation flags of your choice).
 In this instance, we have used a compiled regex supplied by the
 separate `commonregex` package.
 
-Note that, for a regex of `None`, reheader falls back on a fuzzy match of
-header name.
+For a regex of `None`, reheader falls back on a fuzzy match of header name.
 
 ### Optional arguments
 

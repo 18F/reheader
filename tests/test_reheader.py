@@ -17,7 +17,6 @@ from reheader import reheadered
 _raw_txt_1 = """name,email,zip,
 Nellie Newsock,nellie@sox.com,45309,
 Charles the Great,big_carl@roi.gouv.fr,12345-1234,
-Catherine Devlin,catherine.devlin@gsa.gov,45309,
 Grace Hopper,grace@navy.mil,21401,EAFP
 Ada Lovelace,ada@maths.uk,,
 """
@@ -225,4 +224,46 @@ class TestOptionalArgs(object):
                 assert not re.search('\d+', row['name'])
 
     def test_header_absent_and_no_regexes(self):
-        pass
+        infile = StringIO('\n'.join(_raw_txt_1.splitlines()[1:]))
+        data = csv.reader(infile)
+        headers = ['name', 'email', 'zip']
+        with pytest.raises(KeyError):
+            reheadered(data, headers, header_present=False).__next__()
+
+    def test_header_absent_regexes_present(self):
+        infile = StringIO('\n'.join(_raw_txt_1.splitlines()[1:]))
+        data = csv.reader(infile)
+        headers = {'name': r'(\w+\s+)+', 'email': '\w+@\w+\.\w+'}
+        row = reheadered(data, headers, header_present=False).__next__()
+        assert row['name'] == 'Nellie Newsock'
+        assert row['email'] == 'nellie@sox.com'
+
+
+    def test_header_present_regexes_present(self):
+        infile = StringIO('\n'.join(_raw_txt_1.splitlines()[1:]))
+        data = csv.reader(infile)
+        headers = {'name': r'(\w+\s+)+', 'email': '\w+@\w+\.\w+'}
+        row = reheadered(data, headers, header_present=True).__next__()
+        assert row['name'] == 'Charles the Great'
+        assert row['email'] == 'big_carl@roi.gouv.fr'
+
+    def test_header_absent_guessed(self):
+        infile = StringIO('\n'.join(_raw_txt_1.splitlines()[1:]))
+        data = csv.reader(infile)
+        headers = {'name': r'(\w+\s+)+', 'email': '\w+@\w+\.\w+'}
+        row = reheadered(data, headers).__next__()
+        assert row['name'] == 'Nellie Newsock'
+        assert row['email'] == 'nellie@sox.com'
+
+    def test_header_present_guessed(self):
+        infile = StringIO(_raw_txt_1)
+        data = csv.reader(infile)
+        headers = {'name': r'(\w+\s+)+', 'email': '\w+@\w+\.\w+'}
+        row = reheadered(data, headers).__next__()
+        assert row['name'] == 'Nellie Newsock'
+        assert row['email'] == 'nellie@sox.com'
+
+    # form of data changes halfway through
+    # sparse data - use regex when lines are blank
+    # varying number of columns
+    # non-string input
