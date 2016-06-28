@@ -39,9 +39,10 @@ def reheadered(data,
         iterator of dicts with altered keys.
     """
 
-    import pytest; pytest.set_trace()
-    (header_present, data) = _headers_present(header_present, data)
     expected = _parse_desired_headers(desired_headers, optional_prefix)
+    any_regexes = any(h['regex'] for h in expected.values())
+    (header_present, data) = _headers_present(header_present, data,
+                                              any_regexes)
     headers_in_data = None
     mapping = {}
     for row in data:
@@ -191,8 +192,8 @@ def _nonempty_row_slice(data, size=10):
     rows_found = 0
     for row in data:
         captured_rows.append(row)
-        nonempty_rows.append(row)
         if not is_empty(row):
+            nonempty_rows.append(row)
             rows_found += 1
         if rows_found >= size:
             break
@@ -216,14 +217,23 @@ def _big_difference_first_to_second_row(rows):
     return header_similarity < average_similarity - 10
 
 
-def _headers_present(header_present, data):
+def _headers_present(header_present, data, any_regexes):
     if header_present in (True, False):
         return (header_present, data)
     try:
         return (int(header_present), data)
     except (TypeError, ValueError):
         (rows, data) = _nonempty_row_slice(data)
+        if len(rows) == 0:
+            return (False, data)
         if hasattr(rows[0], 'keys'):
             return (False, data)
+        if len(rows) == 1:
+            if any_regexes:
+                return (False, data)
+            else:
+                return (True, data)
+        if len(rows) == 2:
+            return (_row_similarity(*rows) < 0.2, data)
         header_present = _big_difference_first_to_second_row(rows)
         return (header_present, data)
