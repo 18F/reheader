@@ -1,14 +1,13 @@
 # -*- coding: utf-8 -*-
 
-from copy import copy
 import logging
-from fuzzywuzzy import fuzz
 import re
+
+from fuzzywuzzy import fuzz
 
 MINIMUM_SCORE = 60
 OPTIONAL_PREFIX = '?:'
-logging.basicConfig(filename='reheader.log',level=logging.DEBUG)
-
+logging.basicConfig(filename='reheader.log', level=logging.DEBUG)
 
 
 def _normalize_whitespace(s):
@@ -32,10 +31,11 @@ def is_empty(row):
                 return not bool(row)
     return True
 
-def _parse_headers(headers, optional_prefix):
+
+def _parse_expected_headers(headers, optional_prefix):
     """
     >>> from pprint import pprint
-    >>> headers = _parse_headers(['a', 'b', '?:c'], '?:')
+    >>> headers = _parse_expected_headers(['a', 'b', '?:c'], '?:')
     >>> headers['a']['regex']
     None
     >>> headers['a']['required']
@@ -57,14 +57,14 @@ def _parse_headers(headers, optional_prefix):
     return {_normalize_whitespace(k): headers[k] for k in headers}
 
 
-def ratio(s1, s2):
+def _similarity(s1, s2):
     return fuzz.ratio(_normalize_whitespace(s1), _normalize_whitespace(s2))
 
 
-def header_name_match(actual, expected, minimum_score):
+def _map_by_fuzzy_header_name(actual, val, expected, minimum_score):
     if expected:
-        best = sorted(expected, key=lambda s: ratio(actual, s))[-1]
-        score = ratio(actual, best)
+        best = sorted(expected, key=lambda s: _similarity(actual, s))[-1]
+        score = _similarity(actual, best)
         logging.debug('Max score for {} in {} is {}: {}'.format(
             actual, expected, best, score))
         if score >= minimum_score:
@@ -73,35 +73,47 @@ def header_name_match(actual, expected, minimum_score):
             logging.debug('Score < {}, not a match'.format(minimum_score))
 
 
-def best_match(actual, val, expected, minimum_score, prefer_fuzzy):
-    logging.debug('Seeking best match for col {}, val {} among {}'.format(actual, val, expected.keys()))
-    if prefer_fuzzy:
-        logging.debug('Preferential attempt to fuzzy match')
-        result = header_name_match(actual, expected, minimum_score)
-        if result:
-            logging.debug('Preferential fuzzy match succeeded')
-            return result
+def _map_by_regex(actual, val, expected, minimum_score):
     for col in expected:
         if expected[col]['regex'] and expected[col]['regex'].search(val):
             logging.debug('Successful regex match to {}'.format(val))
             return col
-    logging.debug('Final attempt to fuzzy match')
-    return header_name_match(actual, expected, minimum_score)
 
-def find_mapping():
+
+def _map_unchanged(actual, val, expected, minimum_score):
+    return actual
+
+
+def _find_mapping(row, expected, minimum_score, prefer_fuzzy, keep_extra):
     """
-    Determine dict relating header in data:user-expected header
+    Determine dict relating header_in_data:user_expected_header
     """
-    pass
+    mappers = [_map_by_regex, _map_by_fuzzy_header_name]
+    if prefer_fuzzy:
+        mappers.reverse()
+    if keep_extra:
+        mappers.append(_map_unchanged)
+    mapping = {}
+    for mapper in mappers:
+        for col in row:
+            if not mapping.get(col):
+                mapping[col] = mapper(col, row[col], expected, minimum_score)
+                if mapping[col]:
+                    expected.pop(mapping[col], None)
+    unmet = [h for h in expected if expected[h]['required']]
+    if unmet:
+        err_msg = '{} not found in {}'.format(unmet, row)
+        raise KeyError(err_msg)
+    return {mapping[k]: k for k in mapping if mapping[k]}
 
 
 def reheadered(data,
-               headers,
+               expected_headers,
                keep_extra=False,
                minimum_score=MINIMUM_SCORE,
                optional_prefix=OPTIONAL_PREFIX,
                prefer_fuzzy=False):
-    headers = _parse_headers(headers, optional_prefix)
+    expected = _parse_expected_headers(expected_headers, optional_prefix)
     headers_in_data = None
     mapping = {}
     for (row_num, row) in enumerate(data):
@@ -115,20 +127,9 @@ def reheadered(data,
             else:
                 row = {r[0]: r[1] for r in zip(headers_in_data, row)}
         if not mapping:
-            row_requirements = copy(headers)
-            for col in row:
-                match = best_match(col, row[col], row_requirements, minimum_score, prefer_fuzzy)
-                logging.info('col {} in data matched to {} in expected'.format(col, match))
-                if match is not None:
-                    row_requirements.pop(match)
-                else:
-                    if keep_extra:
-                        match = col
-                if match is not None:
-                    mapping[match] = col
-            unmet = [h for h in row_requirements
-                     if row_requirements[h]['required']]
-            if unmet:
-                err_msg = '{} not found in row #{}: {}'.format(unmet, row_num, row)
-                raise KeyError(err_msg)
+            mapping = _find_mapping(row=row,
+                                    expected=expected,
+                                    minimum_score=minimum_score,
+                                    prefer_fuzzy=prefer_fuzzy,
+                                    keep_extra=keep_extra)
         yield {k: row[mapping[k]] for k in mapping}

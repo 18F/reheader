@@ -59,7 +59,7 @@ class TestReheaderedFuzzyMatch(object):
 
     def test_perfect_column_name_match_list_of_lists(self):
         data = _data(reader=csv.reader, with_headers=True)
-        for row in reheadered(_data(), ['name', 'email', 'zip']):
+        for row in reheadered(data, ['name', 'email', 'zip']):
             assert 'name' in row
             assert 'email' in row
             assert 'zip' in row
@@ -108,7 +108,7 @@ class TestReheaderedFuzzyMatch(object):
     def test_fuzzy_column_name_match_list_of_lists(self):
         data = _data(reader=csv.reader, with_headers=True)
         headers = ['Name', 'mail', 'zipcode']
-        for row in reheadered(_data(), headers):
+        for row in reheadered(data, headers):
             assert 'Name' in row
             assert 'name' not in row
 
@@ -198,14 +198,12 @@ class TestOptionalArgs(object):
             assert 'name' in row
             assert 'email' in row
             assert 'zip' in row
-            assert '' in row
 
     def test_keep_extra_with_fuzzy_match(self):
         for row in reheadered(_data(), ['Name', 'e-mail'], keep_extra=True):
             assert 'Name' in row
             assert 'e-mail' in row
             assert 'zip' in row
-            assert '' in row
 
     def test_low_minimum_score(self):
         headers = ['Name', 'mail', 'zip_code']
@@ -225,3 +223,6 @@ class TestOptionalArgs(object):
             assert 'name' in row
             if row['name']:
                 assert not re.search('\d+', row['name'])
+
+    def test_header_absent_and_no_regexes(self):
+        pass
