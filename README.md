@@ -11,11 +11,6 @@
   alt="Travis shield">
 </a>
 
-<a href="https://travis-ci.org/18F/reheader">
-  <img src="https://img.shields.io/travis/18F/reheader.svg"
-  alt="Travis shield">
-</a>
-
 <a href="https://reheader.readthedocs.io/en/latest/?badge=latest ">
   <img src=https://readthedocs.org/projects/reheader/badge/?version=latest"
   alt="ReadTheDocs shield">
