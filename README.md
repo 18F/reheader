@@ -1,25 +1,10 @@
 # reheader
 
-
-<a href="https://pypi.python.org/pypi/reheader">
-  <img src="https://img.shields.io/pypi/v/reheader.svg"
-  alt="PyPI shield">
-</a>
-
-<a href="https://travis-ci.org/18F/reheader">
-  <img src="https://img.shields.io/travis/18F/reheader.svg"
-  alt="Travis shield">
-</a>
-
-<a href="https://reheader.readthedocs.io/en/latest/?badge=latest ">
-  <img src=https://readthedocs.org/projects/reheader/badge/?version=latest"
-  alt="ReadTheDocs shield">
-</a>
-
-<a href="https://pyup.io/repos/github/18F/reheader/">
-  <img src="https://pyup.io/repos/github/18F/cookiecutter-django/shield.svg"
-  alt="Updates">
-</a>
+[![PyPI Status](https://img.shields.io/pypi/v/reheader.svg)](https://pypi.python.org/pypi/reheader)
+[![Build Status](https://img.shields.io/travis/18F/reheader.svg?branch=master)](https://travis-ci.org/18F/reheader)
+[![Coverage Status](https://coveralls.io/repos/github/18F/reheader.svg?branch=master)](https://coveralls.io/github/18f/reheader?branch=master)
+[![Code Climate](https://codeclimate.com/github/18F/reheader.svg)](https://codeclimate.com/github/18F/reheader)
+[![Accessibility](https://continua11y.18f.gov/18F/reheader?branch=master)](https://continua11y.18f.gov/18F/reheader)
 
 Forces data's headers to match an expected template, using fuzzy column
 name matching and/or regular expressions to recognize columns.
