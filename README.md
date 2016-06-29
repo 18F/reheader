@@ -4,7 +4,6 @@
 [![Build Status](https://img.shields.io/travis/18F/reheader.svg?branch=master)](https://travis-ci.org/18F/reheader)
 [![Coverage Status](https://coveralls.io/repos/github/18F/reheader.svg?branch=master)](https://coveralls.io/github/18f/reheader?branch=master)
 [![Code Climate](https://codeclimate.com/github/18F/reheader.svg)](https://codeclimate.com/github/18F/reheader)
-[![Accessibility](https://continua11y.18f.gov/18F/reheader?branch=master)](https://continua11y.18f.gov/18F/reheader)
 
 Forces data's headers to match an expected template, using fuzzy column
 name matching and/or regular expressions to recognize columns.

@@ -172,6 +172,18 @@ class TestReheaderedRegexMatch(object):
             if row['columnB']:
                 assert re.search('\d+', row['columnB'])
 
+    def test_compiled_regexes(self):
+        columnAregex = re.compile(r"""\w+   #  name
+                                      @\w+  # email provider
+                                      \.\w+ # domain""", re.VERBOSE)
+        headers = {'columnA': columnAregex, 'columnB': re.compile(r'\d+')}
+        for row in reheadered(_data(), headers):
+            assert 'columnA' in row
+            assert '@' in row['columnA']
+            assert 'columnB' in row
+            if row['columnB']:
+                assert re.search(r'\d+', row['columnB'])
+
     def test_mix_regexes_with_column_name_matches(self):
         headers = {'columnA': '\w+@\w+\.\w+', 'zip': None}
         for row in reheadered(_data(), headers):
