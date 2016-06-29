@@ -14,17 +14,24 @@ from io import StringIO
 import pytest
 from reheader import reheadered
 
-_raw_txt_1 = """name,email,zip,
+_raw_txt_1 = u"""name,email,zip,
 Nellie Newsock,nellie@sox.com,45309,
 Charles the Great,big_carl@roi.gouv.fr,12345-1234,
 Grace Hopper,grace@navy.mil,21401,EAFP
 Ada Lovelace,ada@maths.uk,,
 """
 
-_raw_txt_2 = """zipcode, Name, e-mail, profession
+_raw_txt_2 = u"""zipcode, Name, e-mail, profession
 02139, Margaret Hamilton, mhamilton@nasa.gov, programmer
 19803-0000, Stephanie Kwolek, skwolek@dupont.com, chemist
 48198, Elijah McCoy, realmccoy@mich-central-rr.com"""
+
+
+def _next(iter):
+    try:
+        return iter.__next__()
+    except AttributeError:
+        return iter.next()
 
 
 def _data(src=_raw_txt_1, reader=csv.DictReader, with_headers=True):
@@ -67,7 +74,7 @@ class TestReheaderedFuzzyMatch(object):
         infile = StringIO(_raw_txt_1.splitlines()[0])
         data = csv.reader(infile)
         with pytest.raises(StopIteration):
-            reheadered(data, ['name', 'email', 'zip']).__next__()
+            _next(reheadered(data, ['name', 'email', 'zip']))
 
     def test_list_of_lists_whitespace_before_headers(self):
         src = "\n\n\n\n" + _raw_txt_1
@@ -121,7 +128,7 @@ class TestReheaderedFuzzyMatch(object):
     def test_fuzzy_column_name_match_failure(self):
         headers = ['Name', 'mail', 'thy one true zip code']
         with pytest.raises(KeyError):
-            reheadered(_data(), headers).__next__()
+            _next(reheadered(_data(), headers))
 
     def test_optional_column_marker_tolerated(self):
         headers = ['Name', '?:mail', 'zip']
@@ -149,12 +156,12 @@ class TestReheaderedRegexMatch(object):
     def test_dict_of_headers_accepted(self):
         headers = {'name': r'(\w+\s+)+', 'email': '\w+@\w+\.\w+'}
         data = _data()
-        reheadered(data, headers).__next__()
+        _next(reheadered(data, headers))
 
     def test_list_of_lists_accepted(self):
         headers = {'name': r'(\w+\s+)+', 'email': '\w+@\w+\.\w+'}
         data = _data(reader=csv.reader, with_headers=True)
-        reheadered(data, headers).__next__()
+        _next(reheadered(data, headers))
 
     def test_regexes_preferred_to_fuzzy_match(self):
         headers = {'columnA': '\w+@\w+\.\w+', 'columnB': '\d+'}
@@ -212,7 +219,7 @@ class TestOptionalArgs(object):
     def test_high_minimum_score(self):
         headers = ['Name', 'mail', 'zip']
         with pytest.raises(KeyError):
-            reheadered(_data(), headers, minimum_score=90).__next__()
+            _next(reheadered(_data(), headers, minimum_score=90))
 
     def test_prefer_fuzzy(self):
         headers = {'columnA': '\w+@\w+\.\w+', 'name': '\d+'}
@@ -228,22 +235,21 @@ class TestOptionalArgs(object):
         data = csv.reader(infile)
         headers = ['name', 'email', 'zip']
         with pytest.raises(KeyError):
-            reheadered(data, headers, header_present=False).__next__()
+            _next(reheadered(data, headers, header_present=False))
 
     def test_header_absent_regexes_present(self):
         infile = StringIO('\n'.join(_raw_txt_1.splitlines()[1:]))
         data = csv.reader(infile)
         headers = {'name': r'(\w+\s+)+', 'email': '\w+@\w+\.\w+'}
-        row = reheadered(data, headers, header_present=False).__next__()
+        row = _next(reheadered(data, headers, header_present=False))
         assert row['name'] == 'Nellie Newsock'
         assert row['email'] == 'nellie@sox.com'
-
 
     def test_header_present_regexes_present(self):
         infile = StringIO('\n'.join(_raw_txt_1.splitlines()[1:]))
         data = csv.reader(infile)
         headers = {'name': r'(\w+\s+)+', 'email': '\w+@\w+\.\w+'}
-        row = reheadered(data, headers, header_present=True).__next__()
+        row = _next(reheadered(data, headers, header_present=True))
         assert row['name'] == 'Charles the Great'
         assert row['email'] == 'big_carl@roi.gouv.fr'
 
@@ -251,7 +257,7 @@ class TestOptionalArgs(object):
         infile = StringIO('\n'.join(_raw_txt_1.splitlines()[1:]))
         data = csv.reader(infile)
         headers = {'name': r'(\w+\s+)+', 'email': '\w+@\w+\.\w+'}
-        row = reheadered(data, headers).__next__()
+        row = _next(reheadered(data, headers))
         assert row['name'] == 'Nellie Newsock'
         assert row['email'] == 'nellie@sox.com'
 
@@ -259,7 +265,7 @@ class TestOptionalArgs(object):
         infile = StringIO(_raw_txt_1)
         data = csv.reader(infile)
         headers = {'name': r'(\w+\s+)+', 'email': '\w+@\w+\.\w+'}
-        row = reheadered(data, headers).__next__()
+        row = _next(reheadered(data, headers))
         assert row['name'] == 'Nellie Newsock'
         assert row['email'] == 'nellie@sox.com'
 

@@ -4,6 +4,19 @@ import itertools
 import logging
 import re
 import string
+try:
+    maketrans = str.maketrans
+except AttributeError:
+    maketrans = string.maketrans
+try:
+    ascii_lowercase = str.ascii_lowercase
+    ascii_uppercase = str.ascii_uppercase
+    digits = str.digits
+except AttributeError:
+    ascii_lowercase = string.ascii_lowercase
+    ascii_uppercase = string.ascii_uppercase
+    digits = string.digits
+
 
 from fuzzywuzzy import fuzz
 
@@ -163,9 +176,9 @@ def _find_mapping(row, expected, minimum_score, prefer_fuzzy, keep_extra):
     return {mapping[k]: k for k in mapping if mapping[k]}
 
 
-_roughen_in = string.ascii_lowercase + string.ascii_uppercase + string.digits
+_roughen_in = ascii_lowercase + ascii_uppercase + digits
 _roughen_out = 'a' * 26 + 'A' * 26 + '9' * 10
-_roughen_table = str.maketrans(_roughen_in, _roughen_out)
+_roughen_table = maketrans(_roughen_in, _roughen_out)
 
 
 def _roughen_string(orig):
