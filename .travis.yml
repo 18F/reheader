@@ -8,7 +8,7 @@ env:
   - TOXENV=pypy
   global:
   - secure: iL7EJAF66EdZFetoDBiK28EAOAuLLp1IZe+jxIT+s1bPqFmLF8L50yeW+yM3nnG1hV1UROjDb63mLHgFK9QZkRz4lOEjAO0byISZ0CJEbd70+JcJKABKfiNp3jHNT8TFI+RPTWYLiS8/7E9xTFc5l1dF+egnykxW6oXSRRSB1HHCVPPJdKlRjBA0k3YvYoEalSgSaGG+DUQJ3Ph3oq8AkLwE8UeTRlKVlIEB8Hzx80e2mUAOk2IToWwwp/wqcQKoD8QscwJbNN3mx6ulgmFgIg3kHd2l/wSJKXsQWsaGxA6oV+b3P3hgcA6BAhfdBGdavTrLh//YixtIKaJKZBa1FQlsBflElS3y4d5RnBbibF2iex6JEyQpswd2YHiFUyVEFyakNVgqnsR+VFWO5pj8PZ3BStrpEFu3wR0KtmUX3QAu69Qgxxrr0SplUwsSww/J/e1nvu7wy23LLqsGXSGTgX+1VpKG8VzABqoBXP2MUZgP9SRBpRMEAR8tpQUuwsTdAP7b8G7nLMUaUqGL24bD5gZEQ2sGGQF9ut2m/gicNxO1MPdnGFosYkBIlUIDXstCvzHkR76Wl5cCECXTzmzRx+rGk18DboZN93TOD2ODmKEmtqXVxFE/PdPvF/MCnuvCa0Sb/xn1tsjAqEXMbSgHO40lddwviEcm+aAcmutoX7Q=
-install: pip install -U tox codeclimate-test-reporter
+install: pip install -U tox codeclimate-test-reporter pytest pytest-cov
 script: tox -e ${TOXENV} && py.test --cov=.
 after-script:
 - codeclimate-test-reporter
